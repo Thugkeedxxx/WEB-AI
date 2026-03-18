@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>THUGKEED AI EMPIRE</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{
+margin:0;
+font-family:'Orbitron',sans-serif;
+background:#0a0a0f;
+color:white;
+overflow-x:hidden;
+transition: background 0.5s;
+cursor:none; /* Hide default cursor */
+}
+
+/* HEADER */
+h1{
+text-align:center;
+padding:20px;
+font-size:2.5em;
+color:#a855f7;
+text-shadow:0 0 20px #a855f7;
+}
+
+/* CONTAINER */
+.container{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:30px;
+padding:20px;
+}
+
+/* BOX */
+.box{
+position:relative;
+background:rgba(255,255,255,0.05);
+backdrop-filter:blur(10px);
+border:1px solid rgba(168,85,247,0.3);
+border-radius:20px;
+padding:20px;
+width:300px;
+box-shadow:0 0 25px rgba(168,85,247,0.2);
+transition:0.3s;
+overflow:hidden;
+}
+
+.box:hover{
+transform:translateY(-10px) scale(1.03);
+box-shadow:0 0 50px rgba(168,85,247,0.8);
+}
+
+/* INPUT */
+input{
+width:100%;
+padding:10px;
+border:none;
+border-radius:10px;
+margin-top:10px;
+outline:none;
+background:#111;
+color:white;
+}
+
+/* BUTTON */
+button{
+margin-top:10px;
+width:100%;
+padding:10px;
+border:none;
+border-radius:10px;
+background:#a855f7;
+color:white;
+font-weight:bold;
+cursor:pointer;
+transition:0.3s;
+}
+button:hover{
+background:#9333ea;
+box-shadow:0 0 20px #a855f7;
+}
+
+/* OUTPUT */
+p{
+margin-top:10px;
+font-size:0.9em;
+color:#ccc;
+}
+img{
+width:100%;
+margin-top:10px;
+border-radius:10px;
+}
+
+/* PARTICLE CANVAS */
+#particles{
+position:fixed;
+top:0;left:0;
+width:100%;
+height:100%;
+pointer-events:none;
+z-index:-1;
+}
+
+/* FADE IN ON SCROLL */
+.box{opacity:0; transform: translateY(30px); transition: all 0.6s ease-out;}
+.box.visible{opacity:1; transform: translateY(0);}
+</style>
+</head>
+<body>
+
+<h1> THUGKEED AI EMPIRE</h1>
+
+<div style="text-align:center;margin-bottom:20px;">
+<label for="bgLink">Set Background Image URL:</label>
+<input type="text" id="bgLink" placeholder="Paste image URL here" style="width:300px;">
+<button onclick="changeBackground()">Apply</button>
+</div>
+
+<div class="container">
+<div class="box">
+<h2>🤖 AI Chat</h2>
+<input id="chatInput" placeholder="Ask anything...">
+<button onclick="sendChat()">Send</button>
+<p id="chatOutput"></p>
+</div>
+
+<div class="box">
+<h2>🎨 Image Generator</h2>
+<input id="imgInput" placeholder="Describe image...">
+<button onclick="genImage()">Generate</button>
+<img id="imgOutput"/>
+</div>
+
+<div class="box">
+<h2>🧠 Bio Generator</h2>
+<input id="textInput" placeholder="Enter idea...">
+<button onclick="genText()">Generate</button>
+<p id="textOutput"></p>
+</div>
+</div>
+
+<canvas id="particles"></canvas>
+<canvas id="cursorTrail"></canvas>
+
+<script>
+// PARTICLE BACKGROUND
+const canvas=document.getElementById('particles');
+const ctx=canvas.getContext('2d');
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+let particles=[];
+for(let i=0;i<150;i++){
+  particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*2+1,d:Math.random()*2});
+}
+function drawParticles(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='rgba(168,85,247,0.7)';
+  ctx.beginPath();
+  for(let i=0;i<particles.length;i++){
+    let p=particles[i];
+    ctx.moveTo(p.x,p.y);
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2,true);
+  }
+  ctx.fill();
+  updateParticles();
+}
+function updateParticles(){
+  for(let i=0;i<particles.length;i++){
+    let p=particles[i];
+    p.y+=0.3+p.d/2;
+    p.x+=Math.sin(p.y*0.01)*1;
+    if(p.y>canvas.height)p.y=0;
+    if(p.x>canvas.width)p.x=0;
+  }
+}
+setInterval(drawParticles,33);
+
+// CURSOR TRAIL
+const cTrail=document.getElementById('cursorTrail');
+const ctx2=cTrail.getContext('2d');
+cTrail.width=window.innerWidth;
+cTrail.height=window.innerHeight;
+let trail=[];
+window.addEventListener('mousemove',e=>{
+  trail.push({x:e.clientX,y:e.clientY,alpha:1});
+});
+function drawTrail(){
+  ctx2.clearRect(0,0,cTrail.width,cTrail.height);
+  for(let i=0;i<trail.length;i++){
+    let t=trail[i];
+    ctx2.fillStyle=`rgba(168,85,247,${t.alpha})`;
+    ctx2.beginPath();
+    ctx2.arc(t.x,t.y,5,0,Math.PI*2);
+    ctx2.fill();
+    t.alpha-=0.03;
+  }
+  trail=trail.filter(t=>t.alpha>0);
+  requestAnimationFrame(drawTrail);
+}
+drawTrail();
+
+// FADE IN ON SCROLL
+function checkVisible(){
+  const boxes=document.querySelectorAll('.box');
+  boxes.forEach(b=>{
+    const top=b.getBoundingClientRect().top;
+    if(top<window.innerHeight-50){b.classList.add('visible');}
+  });
+}
+window.addEventListener('scroll',checkVisible);
+checkVisible();
+
+// CHANGE BACKGROUND IMAGE
+function changeBackground(){
+  const url=document.getElementById('bgLink').value;
+  if(url)document.body.style.background=`url(${url}) center/cover no-repeat`;
+}
+
+// AI TYPING EFFECT
+async function sendChat(){
+  const input=document.getElementById('chatInput').value;
+  const output=document.getElementById('chatOutput');
+  output.innerText="Thinking...";
+  // Replace with real API
+  let data={reply:"This is a sample AI response for demo."};
+  let text=data.reply;
+  output.innerText="";
+  let i=0;
+  function typeEffect(){
+    if(i<text.length){
+      output.innerText+=text.charAt(i);
+      i++;
+      setTimeout(typeEffect,15);
+    }
+  }
+  typeEffect();
+}
+async function genImage(){
+  const input=document.getElementById('imgInput').value;
+  const output=document.getElementById('imgOutput');
+  output.src='https://via.placeholder.com/300x200.png?text=AI+Image';
+}
+async function genText(){
+  const input=document.getElementById('textInput').value;
+  const output=document.getElementById('textOutput');
+  output.innerText="This is a generated bio for: "+input;
+}
+</script>
+</body>
+</html>
